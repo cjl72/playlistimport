@@ -1,34 +1,33 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using System.Globalization;
-using CsvHelper;
+using playlistimport;
+using Utilities;
 
-//you will need to run "dotnet add package CsvHelper" inside the consoleApp2 Project folder or create the project
-//if you are doing this from scratch or you can create the project with the solution by checking that
-//box when you create it and just add it in the project solution directory
+//User Interaction To Retrieve Data
+var absoluteFilePath = UserInputs.GetFilePathUser();
+var songYear = UserInputs.GetYearUser();
 
-//put the path to the file you want to import
+//Reading In CSV File
+var records = CSVRead.FromPath<Song, SongMap>(absoluteFilePath); 
 
-var reader = new StreamReader("../../../data/music.csv");
-var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-var records = csv.GetRecords<Song>();
+ConsoleWrite.WriteDashedLine();
+ConsoleWrite.WriteToConsole($"Number of CSV File Records = {records.Count}\r");
+ConsoleWrite.WriteDashedLine();
 
-foreach (var record in records)
-{
-    Console.WriteLine(record.Name+" || "+record.Artist);
-}
+//removes duplicates
+var distinctItems = CustomLinqQuery.RemoveDuplicateSongs(records);
 
-public class Song
-{
-    public string Name { get; set; }
-    public string Artist { get; set; }
-    
-    public string Composer { get; set; }
+//Query by specified year
+var songQueryResults = CustomLinqQuery.GetSongsByYr(distinctItems, songYear);
 
-    public string Genre { get; set; }
-    
-    public string Year { get; set; }
+ConsoleWrite.WriteToConsole($"Number of Songs from {songYear} = {songQueryResults.Count}\r");
+ConsoleWrite.WriteDashedLine();
 
-    public string Plays { get; set; }
+//Write Songs to console
+CustomConsoleWrite.WriteSongs(songQueryResults);
 
-}
+//Output to CSV File
+string outPath = "./Output.csv";
+CSVWrite.WriteCSVtoPath(outPath, songQueryResults);
+
+ConsoleWrite.WriteToConsole("Done");
