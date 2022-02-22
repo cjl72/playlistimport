@@ -4,6 +4,7 @@ public class SongMap : ClassMap<Song>
 {
     public SongMap()
     {
+        Map(m => m.Id);
         Map(m => m.Name);
         Map(m => m.Artist);
         Map(m => m.Composer);
